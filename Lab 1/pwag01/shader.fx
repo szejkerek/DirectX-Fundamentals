@@ -10,12 +10,12 @@ struct VertexOut
 
 VertexOut VS_Main(VertexIn vin)
 {
-	//Zadanie 2.1.2 - Vertex Shader
-	//your code here
+    VertexOut vout;
+    vout.Pos = float4(vin.Pos, 1.0f);
+    return vout;
 }
 
 float4 PS_Main(VertexOut pin) : SV_Target
 {
-	//Zadanie 2.1.2 - Pixel shader
-	//your code here
+    return float4(1, 0, 0, 1);
 }

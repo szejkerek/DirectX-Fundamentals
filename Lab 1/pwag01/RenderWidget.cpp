@@ -1,4 +1,4 @@
- #include "Renderwidget.h"
+#include "Renderwidget.h"
 
 
 RenderWidget::RenderWidget(unsigned int width, unsigned int height, HWND hWnd)
@@ -311,65 +311,44 @@ void RenderWidget::CreateDepthStencilView(unsigned int width, unsigned int heigh
 
 void RenderWidget::UpdateViewport(unsigned int width, unsigned int height)
 {
-	m_screenViewport.TopLeftX = 0.0f;
-	m_screenViewport.TopLeftY = 0.0f;
-	m_screenViewport.Width = static_cast<float>(width);
-	m_screenViewport.Height = static_cast<float>(height);
+	m_screenViewport.TopLeftX = 0;//0.25 * static_cast<float>(width);
+	m_screenViewport.TopLeftY = 0;//0.25 * static_cast<float>(height);
+	m_screenViewport.Width = static_cast<float>(width/* /2 */);
+	m_screenViewport.Height = static_cast<float>(height/* /2 */);
 	m_screenViewport.MinDepth = 0.0f;
 	m_screenViewport.MaxDepth = 1.0f;
 
 	m_scissorRect = {	0, //left
 						0, //top
-						static_cast<long>(width), //right
+						static_cast<long>(width /* /2 */), //right
 						static_cast<long>(height) //bottom
 					};
 }
 
 void RenderWidget::BuildRootSignature()
 {
-	//Zadanie 2.1.2 - Root signature desc
-	/*A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(?,
-											?,
-											?,
-											?, 
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-	*/
-
-	//Zadanie 2.1.2 - Create serialized root signature
-	/* create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(0, NULL, 0, NULL, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 	Microsoft::WRL::ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 	const HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
 	serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
-
 	if (errorBlob != nullptr)
 	{
 		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 	}
 	assert(SUCCEEDED(hr));
-	*/
-
-	/*
-	//Zadanie 2.1.2 - Root signature
-	HRESULT result = m_dxDevice->CreateRootSignature(
-		?,
-		[wskaznik do utworzonego bufora serializedRootSig]
-		[rozmiar utworzonego bufora serializedRootSig]
-		IID_PPV_ARGS(m_rootSignature.GetAddressOf()));
+	HRESULT result = m_dxDevice->CreateRootSignature(0,	serializedRootSig->GetBufferPointer(),
+					serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_rootSignature.GetAddressOf()));
 	assert(SUCCEEDED(hr));
-	*/
 }
 
 void RenderWidget::CompileShaders()
 {
-	/* Zadanie 2.1.2 - Shaders
-	m_vertexShaderByteCode = DirectXHelper::CompileShader([sciezka do pliku z shaderem], nullptr, [nazwa funkcji z kodem shadera], "vs_5_0"); 
+	m_vertexShaderByteCode = DirectXHelper::CompileShader(L"shader.fx", nullptr, "VS_Main", "vs_5_0");
 	assert(m_vertexShaderByteCode);
 
-	m_pixelShaderByteCode = DirectXHelper::CompileShader(?, ?, ?, "ps_5_0");
+	m_pixelShaderByteCode = DirectXHelper::CompileShader(L"shader.fx", nullptr, "PS_Main", "ps_5_0");
 	assert(m_pixelShaderByteCode);
-	*/
 }
 
 void RenderWidget::LoadVertexBuffer(const Geometry::VertexBuffer& vertices)
@@ -462,15 +441,15 @@ void RenderWidget::LoadIndexBuffer(const Geometry::IndexBuffer& indices)
 void RenderWidget::LoadGeometry()
 {
 	const auto [vertices, indices] = Geometry::CreateTriangleGeometry();
-	//LoadVertexBuffer(vertices);
-	//LoadIndexBuffer(indices);
+	LoadVertexBuffer(vertices);
+	LoadIndexBuffer(indices);
 }
 
 void RenderWidget::CreateGraphicPipeline()
 {
 	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
 	{ 
-			"??", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
@@ -481,19 +460,25 @@ void RenderWidget::CreateGraphicPipeline()
 	{
 		//reinterpret_cast<BYTE*>(m_vertexShaderByteCode->GetBufferPointer()),
 		//m_vertexShaderByteCode->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_vertexShaderByteCode->GetBufferPointer()),
+		m_vertexShaderByteCode->GetBufferSize()
 	};
 	psoDesc.PS =
 	{
 		//reinterpret_cast<BYTE*>(m_pixelShaderByteCode->GetBufferPointer()),
 		//m_pixelShaderByteCode->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_pixelShaderByteCode->GetBufferPointer()),
+		m_pixelShaderByteCode->GetBufferSize()
 	};
 
 	//Rasterizer
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_FILL_MODE_WIREFRAME, D3D12_CULL_MODE_NONE, FALSE,
+		D3D12_DEFAULT_DEPTH_BIAS,D3D12_DEFAULT_DEPTH_BIAS_CLAMP,D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS,TRUE,FALSE,FALSE, 0,D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	psoDesc.SampleMask = UINT_MAX;
 	//psoDesc.PrimitiveTopologyType = ?;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = BackBufferFormat;
 	psoDesc.SampleDesc.Count = 1;
@@ -501,6 +486,7 @@ void RenderWidget::CreateGraphicPipeline()
 	psoDesc.DSVFormat = DepthStencilFormat;
 	//Nie zapomnij odkomentowac:
 	//ThrowIfFailed(m_dxDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+	ThrowIfFailed(m_dxDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
 
 
@@ -508,49 +494,31 @@ void RenderWidget::Draw()
 {
 	m_directCmdListAlloc->Reset();
 
-	//Reset command list and set graphic pipeline state
 	ResetCommandList(m_pipelineState.Get());
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	//Zadanie 2.1.1
-	// Clear the back buffer and the depth buffer.
 	auto depthStencilViewHandle = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//m_commandList->ClearRenderTargetView([bufor tylny], [kolor], 0, nullptr) 
-	//m_commandList->ClearDepthStencilView([bufor glebokosci/szablonowy], [odpowiednie flagi],
-	//									   [wypelnienie bufora glebokosci], [wypelnienie bufora szablonowego],
-	//									   0, nullptr);
+	m_commandList->ClearRenderTargetView(GetCurrentBackBufferView(), DirectX::Colors::Aquamarine, 0, nullptr);
+	m_commandList->ClearDepthStencilView(depthStencilViewHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
+	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
-	// Zadanie 2.2.2 - Root signature
-	// Set root signature
-	//m_commandList->SetGraphicsRootSignature()
+	m_commandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_commandList->IASetVertexBuffers(0 , 1, &VertexBuffer.VertexBufferView());
+	m_commandList->IASetIndexBuffer(&IndexBuffer.IndexBufferView());
+	m_commandList->RSSetViewports(1, &m_screenViewport);
+	m_commandList->RSSetScissorRects(1, &m_scissorRect);
 
-	// Zadanie 2.2.2 - Input assembly stage
-	// Input Assembly stage
-	//m_commandList->IASetPrimitiveTopology()
-	//m_commandList->IASetVertexBuffers()
-	//m_commandList->IASetIndexBuffers()
-
-
-	// Zadanie 2.2.2 Rasterizer stage
-	//m_commandList->RSSetViewports()
-	//m_commandList->RSSetScissorRects()
-
-
-	// Output merger stage
 	m_commandList->OMSetRenderTargets(1, &GetCurrentBackBufferView(), true, &depthStencilViewHandle);
 
-	// Zadanie 2.2.2 Draw Geometry
-	//m_commandList->DrawIndexedInstanced()
+	m_commandList->DrawIndexedInstanced(3,1,0,0,0);
 
-	// Indicate a state transition on the resource usage.
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	ExecuteCommandList();
 
-	// swap the back and front buffers
 	ThrowIfFailed(m_swapChain->Present(0, 0));
 	m_currBackBuffer = (m_currBackBuffer + 1) % SwapChainBufferCount;
 
