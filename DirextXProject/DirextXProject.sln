@@ -9,6 +9,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pwag02", "..\Lab 2\pwag02\p
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pwag03", "..\Lab 3\pwag03\pwag03.vcxproj", "{E5A32B68-3FE9-44B0-98FA-287570FE99B2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pwag04", "..\Lab 4\pwag04\pwag04.vcxproj", "{9B119D66-34E4-4C10-83E3-4E473F041E2E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pwag05", "..\Lab 5\pwag05\pwag05.vcxproj", "{312751BC-34E6-4FC2-8041-2649CF95B677}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -27,6 +31,14 @@ Global
 		{E5A32B68-3FE9-44B0-98FA-287570FE99B2}.Debug|x64.Build.0 = Debug|x64
 		{E5A32B68-3FE9-44B0-98FA-287570FE99B2}.Release|x64.ActiveCfg = Release|x64
 		{E5A32B68-3FE9-44B0-98FA-287570FE99B2}.Release|x64.Build.0 = Release|x64
+		{9B119D66-34E4-4C10-83E3-4E473F041E2E}.Debug|x64.ActiveCfg = Debug|x64
+		{9B119D66-34E4-4C10-83E3-4E473F041E2E}.Debug|x64.Build.0 = Debug|x64
+		{9B119D66-34E4-4C10-83E3-4E473F041E2E}.Release|x64.ActiveCfg = Release|x64
+		{9B119D66-34E4-4C10-83E3-4E473F041E2E}.Release|x64.Build.0 = Release|x64
+		{312751BC-34E6-4FC2-8041-2649CF95B677}.Debug|x64.ActiveCfg = Debug|x64
+		{312751BC-34E6-4FC2-8041-2649CF95B677}.Debug|x64.Build.0 = Debug|x64
+		{312751BC-34E6-4FC2-8041-2649CF95B677}.Release|x64.ActiveCfg = Release|x64
+		{312751BC-34E6-4FC2-8041-2649CF95B677}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
