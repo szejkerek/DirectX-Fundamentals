@@ -311,17 +311,17 @@ void RenderWidget::CreateDepthStencilView(unsigned int width, unsigned int heigh
 
 void RenderWidget::UpdateViewport(unsigned int width, unsigned int height)
 {
-	m_screenViewport.TopLeftX = 0;//0.25 * static_cast<float>(width);
-	m_screenViewport.TopLeftY = 0;//0.25 * static_cast<float>(height);
-	m_screenViewport.Width = static_cast<float>(width/* /2 */);
-	m_screenViewport.Height = static_cast<float>(height/* /2 */);
+	m_screenViewport.TopLeftX = 0;
+	m_screenViewport.TopLeftY = 0;
+	m_screenViewport.Width = static_cast<float>(width);
+	m_screenViewport.Height = static_cast<float>(height);
 	m_screenViewport.MinDepth = 0.0f;
 	m_screenViewport.MaxDepth = 1.0f;
 
 	m_scissorRect = {	0, //left
 						0, //top
-						static_cast<long>(width /* /2 */), //right
-						static_cast<long>(height) //bottom
+						static_cast<long>(width), 
+						static_cast<long>(height)
 					};
 }
 
@@ -477,15 +477,12 @@ void RenderWidget::CreateGraphicPipeline()
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	psoDesc.SampleMask = UINT_MAX;
-	//psoDesc.PrimitiveTopologyType = ?;
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = BackBufferFormat;
 	psoDesc.SampleDesc.Count = 1;
 	psoDesc.SampleDesc.Quality = 0;
 	psoDesc.DSVFormat = DepthStencilFormat;
-	//Nie zapomnij odkomentowac:
-	//ThrowIfFailed(m_dxDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 	ThrowIfFailed(m_dxDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
 
@@ -499,7 +496,7 @@ void RenderWidget::Draw()
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	auto depthStencilViewHandle = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	m_commandList->ClearRenderTargetView(GetCurrentBackBufferView(), DirectX::Colors::Aquamarine, 0, nullptr);
+	m_commandList->ClearRenderTargetView(GetCurrentBackBufferView(), DirectX::Colors::Beige, 0, nullptr);
 	m_commandList->ClearDepthStencilView(depthStencilViewHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());

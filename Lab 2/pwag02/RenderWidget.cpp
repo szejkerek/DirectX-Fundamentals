@@ -337,18 +337,32 @@ void RenderWidget::UpdateViewport(unsigned int width, unsigned int height)
 void RenderWidget::CreateConstantBuffers()
 {
 	auto bufferByteSize = DirectXHelper::CalcConstantBufferByteSize(sizeof(CameraConstants));
-	/*
+	
 	//Zadanie 2.2.1 Tworzenie bufora stalych
 	ThrowIfFailed(m_dxDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(??),
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(buffer byte size),
+		&CD3DX12_RESOURCE_DESC::Buffer(bufferByteSize),
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&??)));
+		IID_PPV_ARGS(&m_cbViewProjectionMatrix)));
 
-	ThrowIfFailed(m_cbViewProjectionMatrix->Map(??));
-	*/
+
+	ThrowIfFailed(m_cbViewProjectionMatrix->Map(0, nullptr, reinterpret_cast<void**>(&m_VPMatrixData)));
+	
+
+	auto bufferByteSize2 = DirectXHelper::CalcConstantBufferByteSize(sizeof(DirectX::XMMATRIX));
+
+	ThrowIfFailed(m_dxDevice->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(bufferByteSize2),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&m_cbWorldMatrix)));
+
+
+	ThrowIfFailed(m_cbWorldMatrix->Map(0, nullptr, reinterpret_cast<void**>(&m_WMatrixData)));
 }
 
 
@@ -358,9 +372,12 @@ void RenderWidget::BuildRootSignature()
 	// Root parameter can be a table, root descriptor or root constants.
 	//CD3DX12_ROOT_PARAMETER slotRootParameter[1];
 	//slotRootParameter[0].InitAsConstantBufferView(0);
+	CD3DX12_ROOT_PARAMETER slotRootParameter[2];
+	slotRootParameter[0].InitAsConstantBufferView(0);
+	slotRootParameter[1].InitAsConstantBufferView(1);
 ;
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(0, nullptr, 0, nullptr,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
@@ -490,7 +507,8 @@ void RenderWidget::CreateGraphicPipeline()
 {
 	//Zadanie 2.1.2 - Input layout
 	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
-	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
@@ -554,6 +572,7 @@ void RenderWidget::UpdateViewProjectionCBuffer()
 
 	//Zadanie 2.2.4 - zmiana zawartosci bufora stalych
 	//TODO: copy objectConstant object to the world matrix constant buffer
+	memcpy(m_VPMatrixData, &cameraConstants, sizeof(cameraConstants));
 }
 
 void RenderWidget::Draw()
@@ -572,9 +591,9 @@ void RenderWidget::Draw()
 	// Set root signature
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
-	//Zadanie 2.2.3 - podpiecie bufora do potoku renderujacego
 	// Setup constant buffers here:
-	//TODO: use the SetGraphicsRootConstantBufferView function to setup constant buffers
+	m_commandList->SetGraphicsRootConstantBufferView(0, m_cbViewProjectionMatrix->GetGPUVirtualAddress());
+	m_commandList->SetGraphicsRootConstantBufferView(1, m_cbWorldMatrix->GetGPUVirtualAddress());
 
 	// Input Assembly stage
 	m_commandList->IASetVertexBuffers(0, 1, &VertexBuffer.VertexBufferView());

@@ -96,6 +96,10 @@ private:
 
     //Constant buffers
     void CreateConstantBuffers();
+    BYTE* m_VPMatrixData;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_cbViewProjectionMatrix;
+    BYTE* m_WMatrixData;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_cbWorldMatrix;
 
     //Shaders
     void CompileShaders();

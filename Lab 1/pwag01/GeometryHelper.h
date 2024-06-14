@@ -18,10 +18,9 @@ namespace Geometry
 	{
 		std::vector<Vertex> vertices =
 		{
-			//Zadanie 2.2.1 - geometria
-			Vertex({ DirectX::XMFLOAT3(-1,-1, 0) }), //index 1
-			Vertex({ DirectX::XMFLOAT3(0, 1, 0) }), //index 2
-			Vertex({ DirectX::XMFLOAT3(1, -1, 0) }), //index 3
+			Vertex({ DirectX::XMFLOAT3(-1,-1, 0) }),
+			Vertex({ DirectX::XMFLOAT3(0, 1, 0) }),
+			Vertex({ DirectX::XMFLOAT3(1, -1, 0) }),
 		};
 
 		std::vector<std::uint16_t> indices =
