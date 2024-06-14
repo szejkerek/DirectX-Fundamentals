@@ -548,6 +548,7 @@ void RenderWidget::UpdateWorldCBuffer()
 
 	//Zadanie 2.3 - Utworzenie drugiego bufora stalych
 	//TODO: coppy objectConstant object to the world matrix constant buffer
+	memcpy(m_WMatrixData, &objectConstant.WorldMatrix, sizeof(objectConstant.WorldMatrix));
 }
 void RenderWidget::UpdateViewProjectionCBuffer()
 {
