@@ -29,6 +29,8 @@ void RenderWidget::Initialize()
 	CreateWorldViewProjectionMatrixBuffer();
 	CompileShaders();
 	LoadGeometry();
+	LoadTexture(L"WoodCrate2.png");
+	//LoadDDSTexture2(L"gg_logo_sama_kostka.dds");
 
 	//3. Initialize Graphic Pipeline
 	BuildRootSignature();
@@ -347,15 +349,23 @@ void RenderWidget::CreateWorldViewProjectionMatrixBuffer()
 
 void RenderWidget::BuildRootSignature()
 {
+	CD3DX12_DESCRIPTOR_RANGE resourceTable[2];
+	resourceTable[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	resourceTable[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 	//Zadanie 2.1.1 - zaktualizuj root signature, dodaj shader resource view
-	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[2];
 	slotRootParameter[0].InitAsConstantBufferView(0);
+	slotRootParameter[1].InitAsDescriptorTable(2, &resourceTable[0], D3D12_SHADER_VISIBILITY_PIXEL);
 
-	//Zadanie 2.1.2
-	//stworz sampler, CD3DX12_STATIC_SAMPLER_DESC
+	const CD3DX12_STATIC_SAMPLER_DESC sampler(
+		0, // shaderRegister 
+		D3D12_FILTER_ANISOTROPIC, // filter 
+		D3D12_TEXTURE_ADDRESS_MODE_MIRROR, // addressU 
+		D3D12_TEXTURE_ADDRESS_MODE_MIRROR, // addressV 
+		D3D12_TEXTURE_ADDRESS_MODE_MIRROR); // addressW 
 
 	// Zadanie 2.1.1 i .2.1.2 dodaj shaderResourceView oras sampler do RootSignature
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 1, &sampler,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
@@ -582,7 +592,7 @@ void RenderWidget::LoadDDSTexture(const wchar_t * file)
 	
 	//Zadanie 2.1.3 Tworzene Shader Resource View
 	//Odkomentuj!! ta funkcja tworzy widok zasobu
-	//m_dxDevice->CreateShaderResourceView(?, ?, ?);
+	m_dxDevice->CreateShaderResourceView(m_ddsTextureResource.Get(), &srvDesc, heapDesc);
 }
 
 void RenderWidget::CreateGraphicPipeline()
@@ -658,7 +668,7 @@ void RenderWidget::Draw()
 	//Zadanie 2.1.4 - przypisz teksture do potoku renderujacego
 	auto addr = m_cbWVProjectionMatrix->GetGPUVirtualAddress();
 	m_commandList->SetGraphicsRootConstantBufferView(0, m_cbWVProjectionMatrix->GetGPUVirtualAddress());
-	//m_commandList->SetGraphicsRootDescriptorTable(?);
+	m_commandList->SetGraphicsRootDescriptorTable(1, m_srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
 	// Input Assembly stage
