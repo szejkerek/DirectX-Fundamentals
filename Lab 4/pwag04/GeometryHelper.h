@@ -7,7 +7,7 @@ namespace Geometry
 {
 	struct Vertex
 	{
-		Vertex(DirectX::XMFLOAT3 position) :Position(position){}
+		Vertex(DirectX::XMFLOAT3 position) :Position(position) {}
 		DirectX::XMFLOAT3 Position;
 	};
 	using VertexBuffer = std::vector<Vertex>;
@@ -41,7 +41,7 @@ namespace Geometry
 	struct Camera
 	{
 		float Theta = 1.5f * DirectX::XM_PI;
-		float Phi = 2.0f *  DirectX::XM_PIDIV4;
+		float Phi = 2.0f * DirectX::XM_PIDIV4;
 		float Radius = 5.0f;
 		float Width = 0.0f;
 		float Height = 0.0f;

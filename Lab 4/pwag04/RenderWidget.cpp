@@ -19,31 +19,31 @@ void RenderWidget::Initialize()
 	}
 #endif
 
-	//1. Configure directx and create all required objects
-	CreateDXDeviceAndFactory();
-	CreateCommandObjects();
-	CreateSwapChain(m_width, m_height);
-	CreateDescriptorHeaps();
+//1. Configure directx and create all required objects
+CreateDXDeviceAndFactory();
+CreateCommandObjects();
+CreateSwapChain(m_width, m_height);
+CreateDescriptorHeaps();
 
-	//2. Create shaders and resources
-	CreateWorldViewProjectionMatrixBuffer();
-	CompileShaders();
-	LoadGeometry();
-	LoadDDSTexture(L"WoodCrate.dds");
+//2. Create shaders and resources
+CreateWorldViewProjectionMatrixBuffer();
+CompileShaders();
+LoadGeometry();
+LoadDDSTexture(L"billboardgrass0001.dds");
 
-	//3. Initialize Graphic Pipeline
-	BuildRootSignature();
-	CreateGraphicPipeline();
+//3. Initialize Graphic Pipeline
+BuildRootSignature();
+CreateGraphicPipeline();
 
-	//4. Execute all commands
-	ExecuteCommandList();
-	FlushCommandQueue();
+//4. Execute all commands
+ExecuteCommandList();
+FlushCommandQueue();
 
-	//5. Create buffers
-	Resize(m_width, m_height);
+//5. Create buffers
+Resize(m_width, m_height);
 
-	//6. Initialize the world view projection matrix
-	UpdateWorldViewProjectionBuffer();
+//6. Initialize the world view projection matrix
+UpdateWorldViewProjectionBuffer();
 }
 
 void RenderWidget::Resize(int width, int height)
@@ -106,7 +106,7 @@ void RenderWidget::CreateCommandObjects()
 {
 	//Create DirectX Fence
 	ThrowIfFailed(
-		m_dxDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,IID_PPV_ARGS(&m_fence)));
+		m_dxDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
 
 	//Create DirectX Command Queue
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -118,8 +118,8 @@ void RenderWidget::CreateCommandObjects()
 	//Create DirectX Command Allocator
 	ThrowIfFailed(
 		m_dxDevice->CreateCommandAllocator(
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(m_directCmdListAlloc.GetAddressOf())));
+			D3D12_COMMAND_LIST_TYPE_DIRECT,
+			IID_PPV_ARGS(m_directCmdListAlloc.GetAddressOf())));
 
 	//Create DirectX Command List
 	ThrowIfFailed(m_dxDevice->CreateCommandList(
@@ -211,7 +211,7 @@ void RenderWidget::FlushCommandQueue()
 	m_currentFence++;
 
 	m_commandQueue->Signal(m_fence.Get(), m_currentFence);
-	
+
 	const auto completedValue = m_fence->GetCompletedValue();
 	assert(completedValue != UINT64_MAX);
 	if (completedValue < m_currentFence)
@@ -287,8 +287,8 @@ void RenderWidget::CreateDepthStencilView(unsigned int width, unsigned int heigh
 	depthStencilDesc.DepthOrArraySize = 1;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	depthStencilDesc.SampleDesc.Count =  1;
-	depthStencilDesc.SampleDesc.Quality =  0;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
 	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
@@ -308,7 +308,7 @@ void RenderWidget::CreateDepthStencilView(unsigned int width, unsigned int heigh
 	// Create descriptor to mip level 0 of entire resource using the format of the resource.
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	dsvDesc.ViewDimension =  D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Format = DepthStencilFormat;
 	dsvDesc.Texture2D.MipSlice = 0;
 	auto depthStencilViewHandle = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -331,7 +331,7 @@ void RenderWidget::UpdateViewport(unsigned int width, unsigned int height)
 void RenderWidget::CreateWorldViewProjectionMatrixBuffer()
 {
 	//constant  buffer
-	const auto elementByteSize = DirectXHelper::CalcConstantBufferByteSize( sizeof(ObjectConstants));
+	const auto elementByteSize = DirectXHelper::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 	const auto elements = 1;
 
 	ThrowIfFailed(m_dxDevice->CreateCommittedResource(
@@ -368,7 +368,7 @@ void RenderWidget::BuildRootSignature()
 	Microsoft::WRL::ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-	serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
 
 	if (errorBlob != nullptr)
 	{
@@ -393,6 +393,8 @@ void RenderWidget::CompileShaders()
 	assert(m_pixelShaderByteCode);
 
 	//Zadanie 2.1 Dodaj kod kompilujacy geometry shader
+	m_geometryShaderByteCode = DirectXHelper::CompileShader(L"shader.fx", nullptr, "GS_Main", "gs_5_0");
+	assert(m_geometryShaderByteCode);
 }
 
 void RenderWidget::LoadVertexBuffer(const Geometry::VertexBuffer& vertices)
@@ -431,7 +433,7 @@ void RenderWidget::LoadVertexBuffer(const Geometry::VertexBuffer& vertices)
 	subResourceData.pData = pdata;
 	subResourceData.RowPitch = vbByteSize;
 	subResourceData.SlicePitch = subResourceData.RowPitch;
-	
+
 	// Load vertices to GPU
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(VertexBuffer.VertexBufferGPU.Get(),
 		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
@@ -447,7 +449,7 @@ void RenderWidget::LoadGeometry()
 	LoadVertexBuffer(Geometry::CreatePointCloud());
 }
 
-void RenderWidget::LoadDDSTexture(const wchar_t * file)
+void RenderWidget::LoadDDSTexture(const wchar_t* file)
 {
 	// 1. Load a texture from a file
 	HRESULT result = DirectX::CreateDDSTextureFromFile12(m_dxDevice.Get(), m_commandList.Get(), file, m_ddsTextureResource, m_ddsTextureResourceUpload);
@@ -490,12 +492,17 @@ void RenderWidget::CreateGraphicPipeline()
 		m_pixelShaderByteCode->GetBufferSize()
 	};
 	//Zadane 2.1 - Podepnij program cieniujacy geometrie do potoku renderujacego
+	psoDesc.GS =
+	{
+		reinterpret_cast<BYTE*>(m_geometryShaderByteCode->GetBufferPointer()),
+		m_geometryShaderByteCode->GetBufferSize()
+	};
 
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE; //Zadanie 2.2 - zmien topologie na punkty
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; //Zadanie 2.2 - zmien topologie na punkty
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = BackBufferFormat;
 	psoDesc.SampleDesc.Count = 1;
@@ -507,7 +514,6 @@ void RenderWidget::CreateGraphicPipeline()
 void RenderWidget::UpdateWorldViewProjectionBuffer()
 {
 	DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&Geometry::Identity4x4());
-
 	m_camera.UpdateViewMatrix();
 	DirectX::XMMATRIX view = m_camera.GetViewMatrix();
 	DirectX::XMMATRIX proj = m_camera.GetProjectionMatrix();
@@ -516,6 +522,7 @@ void RenderWidget::UpdateWorldViewProjectionBuffer()
 	// Update the constant buffer with the latest worldViewProj matrix.
 	ObjectConstants objConstants;
 	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+	objConstants.CameraPosition = m_camera.GetPosition();
 
 	//Upload buffer
 	memcpy(m_mappedData, &objConstants, sizeof(objConstants));
@@ -546,7 +553,7 @@ void RenderWidget::Draw()
 
 	// Input Assembly stage
 	m_commandList->IASetVertexBuffers(0, 1, &VertexBuffer.VertexBufferView());
-	m_commandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST); //Zadanie 2.2 zmien topologie na punkty
+	m_commandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Rasterizer stage
 	m_commandList->RSSetViewports(1, &m_screenViewport);
@@ -556,7 +563,7 @@ void RenderWidget::Draw()
 	m_commandList->OMSetRenderTargets(1, &GetCurrentBackBufferView(), true, &depthStencilViewHandle);
 
 	// Draw Geometry
-	m_commandList->DrawInstanced(2, 1, 0, 0); //Zadanie 2.2 popraw funkcje rysujaca
+	m_commandList->DrawInstanced(3, 1, 0, 0); //Zadanie 2.2 popraw funkcje rysujaca
 
 	// Indicate a state transition on the resource usage.
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),

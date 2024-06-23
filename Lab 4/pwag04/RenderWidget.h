@@ -6,13 +6,14 @@
 struct ObjectConstants
 {
     DirectX::XMFLOAT4X4 WorldViewProj = Geometry::Identity4x4();
+    DirectX::XMFLOAT3 CameraPosition;
 };
 
 class RenderWidget
 {
-    
+
 public:
-	explicit RenderWidget(unsigned int width, unsigned int height, HWND hWnd);
+    explicit RenderWidget(unsigned int width, unsigned int height, HWND hWnd);
     void UpdateWorldViewProjectionBuffer();
     void Initialize();
     void Draw();
@@ -20,10 +21,10 @@ public:
     Geometry::Camera& GetCamera() {
         return m_camera;
     }
-    
+
 private:
     UINT m_rtvDescriptorSize = 0;
-	//DirectX12 objects
+    //DirectX12 objects
     void CreateDXDeviceAndFactory();
     void CreateSwapChain(unsigned int width, unsigned int height);
     void ResizeSwapChain(unsigned int width, unsigned int height);
@@ -72,6 +73,7 @@ private:
     void CompileShaders();
     Microsoft::WRL::ComPtr<ID3DBlob> m_vertexShaderByteCode;
     Microsoft::WRL::ComPtr<ID3DBlob> m_pixelShaderByteCode;
+    Microsoft::WRL::ComPtr<ID3DBlob> m_geometryShaderByteCode;
 
     //Pipeline state and Root signature
     void BuildRootSignature();
