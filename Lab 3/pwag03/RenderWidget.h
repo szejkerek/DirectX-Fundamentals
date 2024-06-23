@@ -83,8 +83,11 @@ private:
     //Textures
     void LoadTexture(const wchar_t* file);
     void LoadDDSTexture(const wchar_t* file);
+    void LoadDDSTexture2(const wchar_t* file);
     Microsoft::WRL::ComPtr<ID3D12Resource> m_ddsTextureResource = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_ddsTextureResource2 = nullptr;
     Microsoft::WRL::ComPtr<ID3D12Resource> m_ddsTextureResourceUpload = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_ddsTextureResourceUpload2 = nullptr;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> m_textureResource = nullptr;
     Microsoft::WRL::ComPtr<ID3D12Resource> m_textureResourceUpload = nullptr;

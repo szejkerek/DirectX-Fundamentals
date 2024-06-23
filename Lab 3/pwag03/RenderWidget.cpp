@@ -30,7 +30,7 @@ void RenderWidget::Initialize()
 	CompileShaders();
 	LoadGeometry();
 	LoadTexture(L"WoodCrate2.png");
-	//LoadDDSTexture2(L"gg_logo_sama_kostka.dds");
+	LoadDDSTexture2(L"gg_logo_sama_kostka.dds");
 
 	//3. Initialize Graphic Pipeline
 	BuildRootSignature();
@@ -166,7 +166,7 @@ void RenderWidget::CreateDescriptorHeaps()
 
 	// Shader Resource View heap descriptor
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.NumDescriptors = 2;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	result = m_dxDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_srvDescriptorHeap));
@@ -591,8 +591,35 @@ void RenderWidget::LoadDDSTexture(const wchar_t * file)
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	
 	//Zadanie 2.1.3 Tworzene Shader Resource View
-	//Odkomentuj!! ta funkcja tworzy widok zasobu
 	m_dxDevice->CreateShaderResourceView(m_ddsTextureResource.Get(), &srvDesc, heapDesc);
+}
+
+void RenderWidget::LoadDDSTexture2(const wchar_t* file)
+{
+	// 1. Load a texture from a file
+	HRESULT result = DirectX::CreateDDSTextureFromFile12(m_dxDevice.Get(), m_commandList.Get(), file, m_ddsTextureResource2, m_ddsTextureResourceUpload2);
+	assert(SUCCEEDED(result) && "Can't load the texture");
+	ThrowIfFailed(result);
+
+	// 2. Get the descriptor heap handle
+	CD3DX12_CPU_DESCRIPTOR_HANDLE heapDesc(m_srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	static auto size = m_dxDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	heapDesc.Offset(1, size);
+
+	// 3. Shader resouce view
+	//Texture is a resouce so it requires a view
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = m_ddsTextureResource2->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = m_ddsTextureResource2->GetDesc().MipLevels;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+	//Zadanie 2.1.3 Tworzene Shader Resource View
+	//Odkomentuj!! ta funkcja tworzy widok zasobu
+	//m_dxDevice->CreateShaderResourceView(?, ?, ?);
+	m_dxDevice->CreateShaderResourceView(m_ddsTextureResource2.Get(), &srvDesc, heapDesc);
 }
 
 void RenderWidget::CreateGraphicPipeline()

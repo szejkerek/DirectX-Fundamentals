@@ -35,6 +35,6 @@ float4 PS_Main(VertexOut pin) : SV_Target
     float4 color;
     color = gTexture.Sample(gSampler, pin.UV);
     float4 color2 = gTexture2.Sample(gSampler, pin.UV);
-    color = color - color2;
+    color = color * color2;
     return color;
 }
