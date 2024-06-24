@@ -55,8 +55,13 @@
     <CopyFileToFolders Include="shader.fx">
       <Filter>Resources</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="height_map.png">
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="height_map.png">
       <Filter>Resources</Filter>
-    </CopyFileToFolders>
+    </Image>
+    <Image Include="heightmap1.png">
+      <Filter>Resources</Filter>
+    </Image>
   </ItemGroup>
 </Project>

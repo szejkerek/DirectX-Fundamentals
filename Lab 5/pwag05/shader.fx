@@ -28,15 +28,15 @@ struct PatchTess
 /*----------------CONSTANT HULL SHADER------------------------------------------*/
 PatchTess ConstantHS(InputPatch<VertexData, 4> patch, uint patchID:SV_PrimitiveID)
 {
-	//Zadanie 2.1 - zmodyfikuj wspolczynniki teselacji
+    float ratio = 3.14 * pow(10, 38); // max float 
 	PatchTess patchTess;
-	patchTess.EdgeTess[0] = 1.0f;
-	patchTess.EdgeTess[1] = 1.0f;
-	patchTess.EdgeTess[2] = 1.0f;
-	patchTess.EdgeTess[3] = 1.0f;
+    patchTess.EdgeTess[0] = ratio;
+    patchTess.EdgeTess[1] = ratio;
+    patchTess.EdgeTess[2] = ratio;
+    patchTess.EdgeTess[3] = ratio;
 
-	patchTess.InsideTess[0] = 1.0f;
-	patchTess.InsideTess[1] = 1.0f;
+    patchTess.InsideTess[0] = ratio;
+    patchTess.InsideTess[1] = ratio;
 
 	return patchTess;
 }
@@ -80,10 +80,17 @@ DomainOut DS_Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const Outp
 	float3 v1 = lerp(quad[0].PosL, quad[1].PosL, uv.x);
 	float3 v2 = lerp(quad[3].PosL, quad[2].PosL, uv.x);
 	float3 p = lerp(v1, v2, uv.y);
-
+	
+    float2 uvV1 = lerp(quad[0].uv, quad[1].uv, uv.x);
+    float2 uvV2 = lerp(quad[3].uv, quad[2].uv, uv.x);
+    float2 uvP = lerp(uvV1, uvV2, uv.y);
+    float4 color = gTexture1.SampleLevel(gSampler1, uvP, 0);
+    p.y = color.y;
+	
+	
 	//Transform to the world view proj coordinates
 	dout.PosH = mul(float4(p, 1.0f), gWorldViewProj);;
-	dout.uv = 0.0f; //Zadanie 2.3 wpolrzedne UV
+    dout.uv = uvP;
 	return dout;
 }
 
@@ -91,5 +98,5 @@ DomainOut DS_Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const Outp
 /*----------------PIXEL SHADER------------------------------------------*/
 float4 PS_Main(DomainOut pin) : SV_Target
 {
-	return  float4(1.0f, 0.0f, 0.0f, 1.0f); //Zadanie 2.3 wpolrzedne UV
+    return gTexture1.Sample(gSampler1, pin.uv);
 }
